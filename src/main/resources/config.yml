@@ -4,3 +4,7 @@ mysql:
   username: "nome_utente"
   password: "password"
   table: "nome_tabella"
+
+
+prefix: "§b[§6CrateSystem§b]§r "
+no-permission: "§4You cannot do this!"

@@ -3,3 +3,7 @@ version: '${project.version}'
 main: me.kuwg.CrateSystem
 api-version: '1.20'
 load: STARTUP
+author: "Kuwg"
+commands:
+  CrateSystem:
+    description: "Main CS command. Usage: CrateSystem <help|create|delete> "

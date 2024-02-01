@@ -31,4 +31,11 @@ public class CrateConfiguration {
     public String getSQLSetting(String setting){
         return this.getString("mysql."+setting);
     }
+
+    public String noPermission(){
+        return config.getString("no-permission", "§4You cannot do this!");
+    }
+    public String getPrefix(){
+        return config.getString("prefix", "§b[§6CrateSystem§b]");
+    }
 }
