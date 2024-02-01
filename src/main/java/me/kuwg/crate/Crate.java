@@ -8,10 +8,17 @@ import java.util.Random;
 
 public class Crate {
     private final List<ItemStack> possibleRewards;
-    public Crate(List<ItemStack> reward){
-        this.possibleRewards =reward;
+    private final double x, y, z;
+    public Crate(List<ItemStack> reward, double x, double y, double z){
+        this.possibleRewards = reward;
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
-    public Crate(){
+    public Crate(double x, double y, double z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
         this.possibleRewards =new ArrayList<>();
     }
     public ItemStack getNextReward(){
@@ -32,5 +39,17 @@ public class Crate {
 
     public List<ItemStack> getPossibleRewards() {
         return possibleRewards;
+    }
+
+    public double getLocationX() {
+        return x;
+    }
+
+    public double getLocationY() {
+        return y;
+    }
+
+    public double getLocationZ() {
+        return z;
     }
 }

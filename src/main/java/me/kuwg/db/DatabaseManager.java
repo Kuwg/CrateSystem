@@ -82,7 +82,7 @@ public class DatabaseManager {
 
     public void saveCrate(String crateName, Crate crate) {
         try {
-            String query = "INSERT INTO " + CRATE_TABLE + " (item_name, item_amount, item_enchantments, item_lore) VALUES (?, ?, ?, ?, ?)";
+            String query = "INSERT INTO " + CRATE_TABLE + " (item_name, item_amount, item_enchantments, item_lore, x, y, z) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
             for (final ItemStack reward : crate.getPossibleRewards()) {
                 ItemMeta meta = reward.getItemMeta();
@@ -90,6 +90,9 @@ public class DatabaseManager {
                 statement.setInt(2, reward.getAmount());
                 statement.setString(3, ItemDataSerializer.serializeEnchants(meta.getEnchants()));
                 statement.setString(4, ItemDataSerializer.serializeLore(reward.getLore()));
+                statement.setDouble(5, crate.getLocationX());
+                statement.setDouble(6, crate.getLocationY());
+                statement.setDouble(7, crate.getLocationZ());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -99,10 +102,14 @@ public class DatabaseManager {
 
     public Crate loadCrate(String crateName) {
         try{
-            String query = "SELECT item_name, item_amount, item_enchantments, item_lore FROM " + CRATE_TABLE;
+            String query = "SELECT item_name, item_amount, item_enchantments, item_lore, x, y, z FROM " + CRATE_TABLE;
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
-            Crate crate = new Crate();
+            Crate crate = new Crate(
+                    resultSet.getDouble("x"),
+                    resultSet.getDouble("y"),
+                    resultSet.getDouble("z")
+            );
 
             while (resultSet.next()) {
                 String itemName = resultSet.getString("item_name");
