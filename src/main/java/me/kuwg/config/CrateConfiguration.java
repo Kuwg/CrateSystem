@@ -20,7 +20,15 @@ public class CrateConfiguration {
         main.saveConfig();
     }
 
-    public boolean getBoolean(String path){
-        return config.getBoolean(path);
+    public boolean getBoolean(String path, boolean def){
+        return config.getBoolean(path, def);
+    }
+
+    public String getString(String path){
+        return config.getString(path, "");
+    }
+
+    public String getSQLSetting(String setting){
+        return this.getString("mysql."+setting);
     }
 }

@@ -1,0 +1,6 @@
+mysql:
+  host: "localhost"
+  database: "nome_del_database"
+  username: "nome_utente"
+  password: "password"
+  table: "nome_tabella"
