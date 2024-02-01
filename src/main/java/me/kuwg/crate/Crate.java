@@ -22,4 +22,15 @@ public class Crate {
         and then get the index at that int
         */
     }
+
+    public void addReward(ItemStack reward){
+        possibleRewards.add(reward);
+    }
+    public void removeReward(ItemStack reward){
+        possibleRewards.remove(reward);
+    }
+
+    public List<ItemStack> getPossibleRewards() {
+        return possibleRewards;
+    }
 }
