@@ -3,10 +3,14 @@ package me.kuwg.db;
 import me.kuwg.config.CrateConfiguration;
 import me.kuwg.crate.Crate;
 import me.kuwg.util.ItemDataSerializer;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("CallToPrintStackTrace")
 public class DatabaseManager {
@@ -93,4 +97,32 @@ public class DatabaseManager {
         }
     }
 
+    public Crate loadCrate(String crateName) {
+        try{
+            String query = "SELECT item_name, item_amount, item_enchantments, item_lore FROM " + CRATE_TABLE;
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+            Crate crate = new Crate();
+
+            while (resultSet.next()) {
+                String itemName = resultSet.getString("item_name");
+                int itemAmount = resultSet.getInt("item_amount");
+                String enchantments = resultSet.getString("item_enchantments");
+                String lore = resultSet.getString("item_lore");
+                ItemStack reward = new ItemStack(Material.getMaterial(itemName), itemAmount);
+                ItemMeta meta = reward.getItemMeta();
+                Map<Enchantment, Integer> deserialized = ItemDataSerializer.deserializeEnchants(enchantments);
+                meta.setLore(ItemDataSerializer.deserializeLore(lore));
+                for(Enchantment enchantment : deserialized.keySet()){
+                    meta.addEnchant(enchantment, deserialized.get(enchantment), true /* allow unsafe */);
+                }
+                crate.addReward(reward);
+            }
+
+            return crate;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
