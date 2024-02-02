@@ -1,9 +1,8 @@
 mysql:
   host: "localhost"
-  database: "nome_del_database"
-  username: "nome_utente"
+  database: "database_connection"
+  username: "user_name"
   password: "password"
-  table: "nome_tabella"
 
 
 prefix: "§b[§6CrateSystem§b]§r "

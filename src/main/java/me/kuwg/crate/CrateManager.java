@@ -1,11 +1,9 @@
 package me.kuwg.crate;
 
 import me.kuwg.CrateSystem;
-import me.kuwg.config.CrateConfiguration;
 import me.kuwg.db.DatabaseManager;
 import me.kuwg.listener.CrateEventListener;
 import me.kuwg.util.Couple;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -73,7 +71,7 @@ public class CrateManager {
             player.getInventory().setItemInMainHand(null);
         else player.getInventory().setItemInOffHand(null);
         Inventory inventory = Bukkit.createInventory(player, 27,
-                Component.text(CrateSystem.getConfiguration().getString("crate-inventory-name")));
+                CrateSystem.getConfiguration().getString("crate-inventory-name"));
         final ItemStack none = new ItemStack(Material.GRAY_STAINED_GLASS);
         ItemMeta noneMeta = none.getItemMeta();
         noneMeta.setDisplayName("");
@@ -119,7 +117,7 @@ public class CrateManager {
     private static final Map<Player, Crate> editingCrates = new HashMap<>();
     public static void openCrateEditor(Player player, Crate crate) {
         Inventory inventory = Bukkit.createInventory(player, 27,
-                Component.text(CrateSystem.getConfiguration().getString("crate-edit-inventory-name")));
+                CrateSystem.getConfiguration().getString("crate-edit-inventory-name"));
         for(ItemStack item : crate.getPossibleRewards()){
             inventory.addItem(item);
         }

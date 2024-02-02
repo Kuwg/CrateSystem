@@ -18,7 +18,7 @@ public class CrateSystemCommand implements CommandExecutor {
             sender.sendMessage(CrateSystem.getConfiguration().noPermission());
             return true;
         }
-        if(!(sender instanceof Player)){
+        if(!(sender instanceof Player player)){
             sender.sendMessage("§4You cannot do this. Only players can do actions with crates.");
             return true;
         }
@@ -26,7 +26,6 @@ public class CrateSystemCommand implements CommandExecutor {
             sender.sendMessage(CrateSystem.getConfiguration().getPrefix() + "Usage: /CrateSystem <help|create|delete>.");
             return true;
         }
-        Player player = (Player) sender;
         final String command = args[0];
         switch (command){
             case "help":
@@ -60,6 +59,10 @@ public class CrateSystemCommand implements CommandExecutor {
                 player.sendMessage("§aSuccessfully created a new crate! Right Click on it to set rewards!");
                 Crate crate = new Crate(CrateManager.nextCrateName(), player.getLocation());
                 CrateManager.addCrate(crate);
+                break;
+            case "reload":
+                CrateSystem.getInstance().reload();
+                sender.sendMessage("§aSuccessfully reloaded the server.");
                 break;
             default:
                 player.sendMessage(CrateSystem.getConfiguration().getPrefix() + "§6Invalid command. Use \"/CrateSystem help\" for help.");

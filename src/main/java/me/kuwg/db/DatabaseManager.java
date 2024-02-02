@@ -11,7 +11,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +30,6 @@ public class DatabaseManager {
         this.username = username;
         this.password = password;
         connectToDatabase();
-        createCrateTable();
     }
 
     public static DatabaseManager fromConfig(CrateConfiguration configuration) {
@@ -47,6 +45,7 @@ public class DatabaseManager {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://" + host + "/" + database, username, password);
+            createCrateTable();
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }

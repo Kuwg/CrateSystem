@@ -22,7 +22,7 @@ public final class CrateSystem extends JavaPlugin {
         CrateManager.loadCrates();
 
         // just to suppress the IntelliJ idea NullPointerException warning without SuppressWarnings.
-        Objects.requireNonNull(getCommand("CrateSystem")).setExecutor(new CrateSystemCommand());
+        Objects.requireNonNull(getCommand("cratesystem")).setExecutor(new CrateSystemCommand());
         getServer().getPluginManager().registerEvents(new CrateEventListener(), this);
 
     }
