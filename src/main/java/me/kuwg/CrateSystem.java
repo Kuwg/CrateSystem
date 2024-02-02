@@ -16,6 +16,7 @@ public final class CrateSystem extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         instance=this;
         configuration=new CrateConfiguration(instance);
         databaseManager=DatabaseManager.fromConfig(configuration);

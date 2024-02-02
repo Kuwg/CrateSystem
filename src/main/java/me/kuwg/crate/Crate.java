@@ -18,13 +18,13 @@ public class Crate {
         this.name = name;
         this.possibleRewards = reward;
         this.location=new Location(world, x, y, z);
-        final String block = location.getBlock().getType().toString().toLowerCase();
-        if(block.contains("chest")||block.contains("shulker_box"))
+        final String block = location.getBlock().getType().toString().toLowerCase().replaceAll("_", " ");
+        if(!block.contains("chest")&&!block.contains("shulker_box"))
             throw new IllegalArgumentException(
                     "Invalid parameter, block at coordinates (x, y, z) " + x + " " + y + " " + z +
-                            " in world " + world.getName() +
-                            " is type " + location.getBlock().getType().toString().toLowerCase().replaceAll("_", " ") +
-                            " while a chest of any type (Chest, Ender Chest, Trapped Chest, Shulker Boxes) was expected."
+                            " in world \"" + world.getName() +
+                            "\" is type \"" + block +
+                            "\" while a chest of any type (Chest, Ender Chest, Trapped Chest, Shulker Boxes) was expected."
             );
     }
     public Crate(String name, World world, double x, double y, double z){
