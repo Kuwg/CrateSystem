@@ -109,12 +109,15 @@ public class CrateManager {
                     for (int i = 9; i <= 17; i++) {
                         inventory.setItem(i, finalReward);
                     }
+                    player.getInventory().addItem(finalReward);
                 }
             }
         }.runTaskTimer(CrateSystem.getInstance(), 0L, 1L);
 
     }
 
+    public static void openCrateEditor(Player player, Crate crate){
 
+    }
 
 }

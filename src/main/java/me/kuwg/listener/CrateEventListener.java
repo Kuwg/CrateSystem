@@ -7,6 +7,7 @@ import me.kuwg.util.Couple;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -60,14 +61,25 @@ public class CrateEventListener implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event){
         Block clickedBlock = event.getClickedBlock();
+        if(event.getAction().isLeftClick()||event.getAction().isRightClick())
+            return;
         final Couple<Boolean, Crate> crateCouple = CrateManager.getCrateAtIf(clickedBlock);
-        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK) && crateCouple.getX()){
-            if(isKey(event.getPlayer().getInventory().getItemInMainHand())){
-                CrateManager.openCrate(event.getPlayer(), crateCouple.getY(), true);
+        if(!crateCouple.getX())return;
+        Player player = event.getPlayer();
+        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
+            if(isKey(player.getInventory().getItemInMainHand())){
+                CrateManager.openCrate(player, crateCouple.getY(), true);
             }
-            else if(isKey(event.getPlayer().getInventory().getItemInOffHand())){
-                CrateManager.openCrate(event.getPlayer(), crateCouple.getY(),  false);
+            else if(isKey(player.getInventory().getItemInOffHand())){
+                CrateManager.openCrate(player, crateCouple.getY(),  false);
             }
+        }
+        else if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
+            if(!player.hasPermission("cratesystem.edit")){
+                player.sendMessage(CrateSystem.getConfiguration().getPrefix() + CrateSystem.getConfiguration().noPermission());
+                return;
+            }
+            CrateManager.openCrateEditor(player, crateCouple.getY());
         }
     }
 
