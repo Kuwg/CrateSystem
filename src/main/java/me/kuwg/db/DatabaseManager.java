@@ -10,34 +10,36 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("CallToPrintStackTrace")
 public class DatabaseManager {
     private Connection connection;
-    private final String host, database, username, password, table;
+    private final String host;
+    private final String database;
+    private final String username;
+    private final String password;
 
     private static final String CRATE_TABLE = "crates";
 
-
-    public DatabaseManager(String host, String database, String username, String password, String table) {
+    public DatabaseManager(String host, String database, String username, String password) {
         this.host = host;
         this.database = database;
         this.username = username;
         this.password = password;
-        this.table = table;
         connectToDatabase();
+        createCrateTable();
     }
-    public static DatabaseManager fromConfig(CrateConfiguration configuration){
+
+    public static DatabaseManager fromConfig(CrateConfiguration configuration) {
         return new DatabaseManager(
                 configuration.getSQLSetting("host"),
                 configuration.getSQLSetting("database"),
                 configuration.getSQLSetting("username"),
-                configuration.getSQLSetting("password"),
-                configuration.getSQLSetting("table")
+                configuration.getSQLSetting("password")
         );
     }
+
     private void connectToDatabase() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -51,9 +53,15 @@ public class DatabaseManager {
         try {
             String query = "CREATE TABLE IF NOT EXISTS " + CRATE_TABLE + " (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "crate_name VARCHAR(255)," +
                     "item_name VARCHAR(255)," +
                     "item_amount INT," +
-                    "item_data INT" +
+                    "item_enchantments VARCHAR(255)," +
+                    "item_lore VARCHAR(255)," +
+                    "world VARCHAR(255)," +
+                    "x DOUBLE," +
+                    "y DOUBLE," +
+                    "z DOUBLE" +
                     ")";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.executeUpdate();
@@ -72,29 +80,22 @@ public class DatabaseManager {
         }
     }
 
-
-
-
-
-
-
-
-
-
     public void saveCrate(String crateName, Crate crate) {
         try {
-            String query = "INSERT INTO " + CRATE_TABLE + " (item_name, item_amount, item_enchantments, item_lore, world, x, y, z) VALUES (?, ?, ?, ?, ?)";
+            String query = "INSERT INTO " + CRATE_TABLE + " (crate_name, item_name, item_amount, item_enchantments, item_lore, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
+
             for (final ItemStack reward : crate.getPossibleRewards()) {
                 ItemMeta meta = reward.getItemMeta();
-                statement.setString(1, reward.getType().name());
-                statement.setInt(2, reward.getAmount());
-                statement.setString(3, ItemDataSerializer.serializeEnchants(meta.getEnchants()));
-                statement.setString(4, ItemDataSerializer.serializeLore(reward.getLore()));
-                statement.setString(5, crate.getLocation().getWorld().getName());
-                statement.setDouble(5, crate.getLocation().getX());
-                statement.setDouble(6, crate.getLocation().getX());
-                statement.setDouble(7, crate.getLocation().getZ());
+                statement.setString(1, crateName);
+                statement.setString(2, reward.getType().name());
+                statement.setInt(3, reward.getAmount());
+                statement.setString(4, ItemDataSerializer.serializeEnchants(meta.getEnchants()));
+                statement.setString(5, ItemDataSerializer.serializeLore(reward.getLore()));
+                statement.setString(6, crate.getLocation().getWorld().getName());
+                statement.setDouble(7, crate.getLocation().getX());
+                statement.setDouble(8, crate.getLocation().getY());
+                statement.setDouble(9, crate.getLocation().getZ());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -103,16 +104,16 @@ public class DatabaseManager {
     }
 
     public Crate loadCrate(String crateName) {
-        try{
-            String query = "SELECT item_name, item_amount, item_enchantments, item_lore, world, x, y, z FROM " + CRATE_TABLE;
+        try {
+            String query = "SELECT item_name, item_amount, item_enchantments, item_lore, world, x, y, z FROM " + CRATE_TABLE + " WHERE crate_name = ?";
             PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, crateName);
             ResultSet resultSet = statement.executeQuery();
-            Crate crate = new Crate(
-                    Bukkit.getWorld(resultSet.getString("world")),
+
+            Crate crate = new Crate(Bukkit.getWorld(resultSet.getString("world")),
                     resultSet.getDouble("x"),
                     resultSet.getDouble("y"),
-                    resultSet.getDouble("z")
-            );
+                    resultSet.getDouble("z"));
 
             while (resultSet.next()) {
                 String itemName = resultSet.getString("item_name");
@@ -123,7 +124,7 @@ public class DatabaseManager {
                 ItemMeta meta = reward.getItemMeta();
                 Map<Enchantment, Integer> deserialized = ItemDataSerializer.deserializeEnchants(enchantments);
                 meta.setLore(ItemDataSerializer.deserializeLore(lore));
-                for(Enchantment enchantment : deserialized.keySet()){
+                for (Enchantment enchantment : deserialized.keySet()) {
                     meta.addEnchant(enchantment, deserialized.get(enchantment), true /* allow unsafe */);
                 }
                 crate.addReward(reward);

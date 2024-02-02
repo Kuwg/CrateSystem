@@ -24,17 +24,10 @@ public class Crate {
             );
     }
     public Crate(World world, double x, double y, double z){
-        this.location=new Location(world, x, y, z);
-        this.possibleRewards =new ArrayList<>();
-        final String block = location.getBlock().getType().toString().toLowerCase();
-        if(block.contains("chest")||block.contains("shulker_box"))
-            throw new IllegalArgumentException(
-                    "Invalid parameter, block at coordinates (x, y, z) " + x + " " + y + " " + z +
-                            " in world " + world.getName() +
-                            " is type " + location.getBlock().getType().toString().toLowerCase().replaceAll("_", " ") +
-                            " while a chest of any type (Chest, Ender Chest, Trapped Chest, Shulker Boxes) was expected."
-            );
-
+        this(new ArrayList<>(), world, x, y, z);
+    }
+    public Crate(Location location){
+        this(location.getWorld(), location.getX(), location.getY(), location.getZ());
     }
     public ItemStack getNextReward(){
         return possibleRewards.get(new Random().nextInt(0, possibleRewards.size()-1));

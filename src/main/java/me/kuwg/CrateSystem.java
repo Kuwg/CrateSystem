@@ -35,4 +35,8 @@ public final class CrateSystem extends JavaPlugin {
     public static CrateConfiguration getConfiguration(){
         return configuration;
     }
+
+    public DatabaseManager getDatabaseManager(){
+        return databaseManager;
+    }
 }
