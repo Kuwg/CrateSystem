@@ -54,7 +54,6 @@ public class DatabaseManager {
     private void createCrateTable() {
         try {
             String query = "CREATE TABLE IF NOT EXISTS " + CRATE_TABLE + " (" +
-                    "id INT AUTO_INCREMENT PRIMARY KEY," +
                     "crate_name VARCHAR(255)," +
                     "item_name VARCHAR(255)," +
                     "item_amount INT," +
@@ -63,7 +62,8 @@ public class DatabaseManager {
                     "world VARCHAR(255)," +
                     "x DOUBLE," +
                     "y DOUBLE," +
-                    "z DOUBLE" +
+                    "z DOUBLE," +
+                    "PRIMARY KEY (crate_name, item_name)" +
                     ")";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.executeUpdate();
@@ -81,23 +81,19 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
-
     public void saveCrate(Crate crate) {
-        System.out.println("saved crate " + crate.getName());
         try {
-            String query = "INSERT INTO " + CRATE_TABLE + " (item_name, item_amount, item_enchantments, item_lore, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO " + CRATE_TABLE + " (crate_name, item_name, item_amount, item_enchantments, item_lore, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
 
             for (final ItemStack reward : crate.getPossibleRewards()) {
-                if(reward==null)continue;
+                if (reward == null) continue;
                 ItemMeta meta = reward.getItemMeta();
                 statement.setString(1, crate.getName());
                 statement.setString(2, reward.getType().name());
                 statement.setInt(3, reward.getAmount());
                 statement.setString(4, ItemDataSerializer.serializeEnchants(meta.getEnchants()));
-
                 statement.setString(5, ItemDataSerializer.serializeLore(meta.getLore()));
-
                 statement.setString(6, crate.getLocation().getWorld().getName());
                 statement.setDouble(7, crate.getLocation().getX());
                 statement.setDouble(8, crate.getLocation().getY());
@@ -108,40 +104,41 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
+
     public Crate loadCrate(String crateName) {
-        try {
-            String query = "SELECT item_name, item_amount, item_enchantments, item_lore, world, x, y, z FROM " + CRATE_TABLE + " WHERE crate_name = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
+        try (
+                PreparedStatement statement = connection.prepareStatement("SELECT item_name, item_amount, item_enchantments, item_lore, world, x, y, z FROM " + CRATE_TABLE + " WHERE crate_name = ?");
+        ) {
             statement.setString(1, crateName);
-            ResultSet resultSet = statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Crate crate = null;
 
-            Crate crate = null;
+                while (resultSet.next()) {
+                    if (crate == null) {
+                        crate = new Crate(
+                                crateName,
+                                Bukkit.getWorld(resultSet.getString("world")),
+                                resultSet.getDouble("x"),
+                                resultSet.getDouble("y"),
+                                resultSet.getDouble("z"));
+                    }
 
-            while (resultSet.next()) {
-                if (crate == null) {
-                    crate = new Crate(
-                            crateName,
-                            Bukkit.getWorld(resultSet.getString("world")),
-                            resultSet.getDouble("x"),
-                            resultSet.getDouble("y"),
-                            resultSet.getDouble("z"));
+                    String itemName = resultSet.getString("item_name");
+                    int itemAmount = resultSet.getInt("item_amount");
+                    String enchantments = resultSet.getString("item_enchantments");
+                    String lore = resultSet.getString("item_lore");
+                    ItemStack reward = new ItemStack(Material.getMaterial(itemName), itemAmount);
+                    ItemMeta meta = reward.getItemMeta();
+                    Map<Enchantment, Integer> deserialized = ItemDataSerializer.deserializeEnchants(enchantments);
+                    meta.setLore(ItemDataSerializer.deserializeLore(lore));
+                    for (Enchantment enchantment : deserialized.keySet()) {
+                        meta.addEnchant(enchantment, deserialized.get(enchantment), true);
+                    }
+                    crate.addReward(reward);
                 }
 
-                String itemName = resultSet.getString("item_name");
-                int itemAmount = resultSet.getInt("item_amount");
-                String enchantments = resultSet.getString("item_enchantments");
-                String lore = resultSet.getString("item_lore");
-                ItemStack reward = new ItemStack(Material.getMaterial(itemName), itemAmount);
-                ItemMeta meta = reward.getItemMeta();
-                Map<Enchantment, Integer> deserialized = ItemDataSerializer.deserializeEnchants(enchantments);
-                meta.setLore(ItemDataSerializer.deserializeLore(lore));
-                for (Enchantment enchantment : deserialized.keySet()) {
-                    meta.addEnchant(enchantment, deserialized.get(enchantment), true);
-                }
-                crate.addReward(reward);
+                return crate;
             }
-
-            return crate;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

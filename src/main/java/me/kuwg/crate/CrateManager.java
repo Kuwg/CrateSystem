@@ -117,7 +117,7 @@ public class CrateManager {
                     }
                     player.getInventory().addItem(finalReward);
                     Bukkit.getScheduler().runTaskLaterAsynchronously(CrateSystem.getInstance(),
-                            ()->player.closeInventory(), 200);
+                            ()->Bukkit.getScheduler().runTask(CrateSystem.getInstance(), ()->player.closeInventory()), 80);
                 }
                 player.openInventory(inventory);
             }

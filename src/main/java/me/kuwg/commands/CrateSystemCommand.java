@@ -67,6 +67,7 @@ public class CrateSystemCommand implements CommandExecutor {
                 break;
             case "give":
                 player.getInventory().addItem(CrateEventListener.KEY);
+                player.sendMessage("§aGave you the key!");
                 break;
             default:
                 player.sendMessage(CrateSystem.getConfiguration().getPrefix() + "§6Invalid command. Use \"/CrateSystem help\" for help.");

@@ -39,6 +39,7 @@ public class CrateEventListener implements Listener {
         meta.setDisplayName(CrateSystem.getConfiguration().getKeyString("name"));
         KEY.setItemMeta(meta);
     }
+
     public static void reload(){
         Material mat = Material.getMaterial(CrateSystem.getConfiguration().getKeyString("material"));
         if(mat==null)mat=Material.DIAMOND;
@@ -139,10 +140,14 @@ public class CrateEventListener implements Listener {
 
 
     private static boolean isKey(final ItemStack itemStack){
-        return itemStack.getItemMeta()!=null &&
+
+        /*return itemStack.getItemMeta()!=null &&
                 itemStack.getItemMeta().getDisplayName().equals(KEY.getItemMeta().getDisplayName())&&
                 itemStack.getType().equals(KEY.getType())&&
                 Objects.equals(itemStack.getItemMeta().getLore(), KEY.getItemMeta().getLore()) &&
                 itemStack.getEnchantments()==KEY.getEnchantments();
+
+         */
+        return itemStack.equals(KEY);
     }
 }
