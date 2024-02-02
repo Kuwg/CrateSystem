@@ -37,6 +37,7 @@ public class CrateEventListener implements Listener {
         if(CrateSystem.getConfiguration().getKeyBool("enchanted"))
             meta.addEnchant(Enchantment.DURABILITY, 1, true);
         meta.setDisplayName(CrateSystem.getConfiguration().getKeyString("name"));
+        KEY.setItemMeta(meta);
     }
     public static void reload(){
         Material mat = Material.getMaterial(CrateSystem.getConfiguration().getKeyString("material"));
