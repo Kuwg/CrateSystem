@@ -58,8 +58,8 @@ public class CrateEventListener implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event){
         Block clickedBlock = event.getClickedBlock();
-        final Couple<Boolean, Crate> crateCouple = CrateManager.isCrate(clickedBlock);
-        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
+        final Couple<Boolean, Crate> crateCouple = CrateManager.getCrateAtIf(clickedBlock);
+        if(event.getAction().equals(Action.LEFT_CLICK_BLOCK) && crateCouple.getX()){
             if(isKey(event.getPlayer().getInventory().getItemInMainHand())){
                 CrateManager.openCrate(event.getPlayer(), crateCouple.getY(), true);
             }

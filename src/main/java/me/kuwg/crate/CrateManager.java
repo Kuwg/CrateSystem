@@ -8,50 +8,54 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CrateManager {
     private static final DatabaseManager databaseManager = CrateSystem.getInstance().getDatabaseManager();
-    private static List<Crate> crates;
-    private static List<Block> cratesBlock;
-    public static void loadCrates(){
-        crates = databaseManager.loadAllCrates();
-        cratesBlock=new ArrayList<>();
-        crates.forEach(crate -> cratesBlock.add(crate.getLocation().getBlock()));
+    private static final Set<Crate> crates = ConcurrentHashMap.newKeySet();
+    private static final Set<Block> cratesBlock = ConcurrentHashMap.newKeySet();
+
+    public static void loadCrates() {
+        crates.addAll(databaseManager.loadAllCrates());
+        cratesBlock.addAll(crates.stream().map(crate -> crate.getLocation().getBlock()).toList());
     }
-    public static void addCrate(final Crate crate){
+
+    public static void addCrate(final Crate crate) {
         crates.add(crate);
         cratesBlock.add(crate.getLocation().getBlock());
     }
-    public static void removeCrate(final Crate crate){
+
+    public static void removeCrate(final Crate crate) {
         crates.remove(crate);
         cratesBlock.remove(crate.getLocation().getBlock());
     }
 
-    public static void saveCrates(){
+    public static void saveCrates() {
         crates.forEach(databaseManager::saveCrate);
     }
 
-    public static String nextCrateName(){
-        return "crate_"+(crates.size()-1);
+    public static String nextCrateName() {
+        return "crate_" + (crates.size());
     }
 
-    public static Couple<Boolean, Crate> isCrate(final Block block){
+    public static Couple<Boolean, Crate> getCrateAtIf(final Block block) {
         for (Block b : cratesBlock) {
-            if (b.getLocation().equals(block.getLocation())) {
-                for(Crate c : crates)
-                    if(c.getLocation().getBlock().equals(b))
-                        return new Couple<>(true, c);
+            if (!b.getLocation().equals(block.getLocation()))
+                continue;
+            for (Crate c : crates) {
+                if (c.getLocation().getBlock().equals(b))
+                    return new Couple<>(true, c);
             }
         }
         return new Couple<>(false, null);
     }
-    public static ItemStack getCratesKey(){
+
+    public static ItemStack getCratesKey() {
         return CrateEventListener.KEY;
     }
 
-    public static void openCrate(Player player, Crate crate, boolean mainHand){
+    public static void openCrate(Player player, Crate crate, boolean mainHand) {
 
     }
 }
