@@ -109,6 +109,7 @@ public class CrateManager {
                     }
                     player.getInventory().addItem(finalReward);
                 }
+                player.openInventory(inventory);
             }
         }.runTaskTimer(CrateSystem.getInstance(), 0L, 1L);
 
@@ -118,17 +119,33 @@ public class CrateManager {
     public static void openCrateEditor(Player player, Crate crate) {
         Inventory inventory = Bukkit.createInventory(player, 27,
                 CrateSystem.getConfiguration().getString("crate-edit-inventory-name"));
-        for(ItemStack item : crate.getPossibleRewards()){
-            inventory.addItem(item);
+        if(crate.getPossibleRewards().size()>=26){
+            System.err.println("Invalid crate: "+crate.getName()+" size="+crate.getPossibleRewards().size()+">25!");
+            return;
         }
+        ItemStack confirm = new ItemStack(Material.GREEN_CONCRETE);
+        ItemMeta confirmMeta = confirm.getItemMeta();
+        confirmMeta.setDisplayName("§aClick to confirm!");
+        confirm.setItemMeta(confirmMeta);
+        inventory.setItem(26, confirm);
+        crate.getPossibleRewards().forEach(inventory::addItem);
         player.openInventory(inventory);
         editingCrates.put(player, crate);
+        new BukkitRunnable(){
+                @Override
+                public void run(){
+                    if(getEditingCrate(player)!=null)
+                        player.openInventory(inventory);
+                    else cancel();
+                }
+        }.runTaskTimer(CrateSystem.getInstance(), 0L, 1L);
     }
 
     public static void saveCrateEditor(Player player, Crate crate, Inventory inventory){
         crate.setRewards(inventory);
         player.closeInventory();
         player.sendMessage("§aSuccessfully saved the crate!");
+        editingCrates.remove(player);
     }
 
     public static @Nullable Crate getEditingCrate(Player player){

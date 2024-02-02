@@ -4,6 +4,7 @@ import me.kuwg.CrateSystem;
 import me.kuwg.crate.Crate;
 import me.kuwg.crate.CrateManager;
 import me.kuwg.util.Couple;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -18,6 +19,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Objects;
 
 
 @SuppressWarnings("deprecation") // for some reason 1.20.4 / paper have all default methods deprecated
@@ -63,8 +66,9 @@ public class CrateEventListener implements Listener {
     @EventHandler
     public void onClick(PlayerInteractEvent event){
         Block clickedBlock = event.getClickedBlock();
-        if(event.getAction().isLeftClick()||event.getAction().isRightClick())
-            return;
+        if(clickedBlock==null)return;
+        // if(event.getAction().isLeftClick()||event.getAction().isRightClick()) return;
+        // remove because only exists on paper and not spigot.
         final Couple<Boolean, Crate> crateCouple = CrateManager.getCrateAtIf(clickedBlock);
         if(!crateCouple.getX())return;
         Player player = event.getPlayer();
@@ -85,6 +89,8 @@ public class CrateEventListener implements Listener {
         }
     }
 
+    /*
+    STACK OVERFLOW ERROR:
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event){
         final Player player = (Player) event.getPlayer();
@@ -97,19 +103,29 @@ public class CrateEventListener implements Listener {
             CrateManager.saveCrateEditor(player, crate, event.getInventory());
         }
     }
+    */
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
         if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-inventory-name")))
             event.setCancelled(true);
+        else if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-edit-inventory-name")))
+            if(event.getCurrentItem().getItemMeta().getDisplayName().equals("aClick to confirm!")){
+                event.setCancelled(true);
+                final Player player = (Player) event.getWhoClicked();
+                Crate edit = CrateManager.getEditingCrate(player);
+                if(edit==null)return;
+                CrateManager.saveCrateEditor(player, edit, event.getClickedInventory());
+            }
 
     }
 
 
     private static boolean isKey(final ItemStack itemStack){
-        return itemStack.getItemMeta().getDisplayName().equals(KEY.getItemMeta().getDisplayName())&&
+        return itemStack.getItemMeta()!=null &&
+                itemStack.getItemMeta().getDisplayName().equals(KEY.getItemMeta().getDisplayName())&&
                 itemStack.getType().equals(KEY.getType())&&
-                itemStack.getLore().equals(KEY.getLore())&&
+                Objects.equals(itemStack.getLore(), KEY.getLore()) &&
                 itemStack.getEnchantments()==KEY.getEnchantments();
     }
 }
