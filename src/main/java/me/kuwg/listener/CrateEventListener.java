@@ -10,6 +10,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -68,6 +70,22 @@ public class CrateEventListener implements Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event){
+        if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-inventory-name"))){
+            event.getPlayer().openInventory(event.getInventory());
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event){
+        if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-inventory-name")))
+            event.setCancelled(true);
+
+    }
+
+
     private static boolean isKey(final ItemStack itemStack){
         return itemStack.getItemMeta().getDisplayName().equals(KEY.getItemMeta().getDisplayName())&&
                 itemStack.getType().equals(KEY.getType())&&

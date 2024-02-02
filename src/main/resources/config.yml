@@ -8,6 +8,7 @@ mysql:
 
 prefix: "§b[§6CrateSystem§b]§r "
 no-permission: "§4You cannot do this!"
+crate-inventory-name: "§eOpening a Crate..."
 
 crate-key:
   name: "§eCrate Key"

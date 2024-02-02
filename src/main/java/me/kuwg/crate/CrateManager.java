@@ -4,10 +4,18 @@ import me.kuwg.CrateSystem;
 import me.kuwg.db.DatabaseManager;
 import me.kuwg.listener.CrateEventListener;
 import me.kuwg.util.Couple;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,6 +64,57 @@ public class CrateManager {
     }
 
     public static void openCrate(Player player, Crate crate, boolean mainHand) {
+        final List<ItemStack> rewards = crate.getPossibleRewards();
+        if(rewards.isEmpty()){
+            player.sendMessage("§4Sadly the rewards are empty for now.");
+            return;
+        }
+        if(mainHand)
+            player.getInventory().setItemInMainHand(null);
+        else player.getInventory().setItemInOffHand(null);
+        Inventory inventory = Bukkit.createInventory(player, 27,
+                Component.text(CrateSystem.getConfiguration().getString("crate-inventory-name")));
+        final ItemStack none = new ItemStack(Material.GRAY_STAINED_GLASS);
+        ItemMeta noneMeta = none.getItemMeta();
+        noneMeta.setDisplayName("");
+        none.setItemMeta(noneMeta);
+        for (int i = 0; i <= 8; i++) {
+            if (i == 4) {
+                inventory.setItem(i, new ItemStack(Material.HOPPER));
+            } else {
+                inventory.setItem(i, none);
+            }
+        }
+        for (int i = 20; i <= 27; i++) {
+            inventory.setItem(i, none);
+        }
+        inventory.setItem(9, none);
+        inventory.setItem(19, none);
+
+
+        int maxTicks = new Random().nextInt(40, 120);
+        new BukkitRunnable() {
+            int tick = 0;
+
+            @Override
+            public void run() {
+                tick++;
+                int index = (tick / 5) % rewards.size();
+                for (int i = 9; i <= 17; i++) {
+                    inventory.setItem(i, rewards.get(index));
+                }
+                if (tick >= maxTicks) {
+                    cancel();
+                    ItemStack finalReward = crate.getNextReward();
+                    for (int i = 9; i <= 17; i++) {
+                        inventory.setItem(i, finalReward);
+                    }
+                }
+            }
+        }.runTaskTimer(CrateSystem.getInstance(), 0L, 1L);
 
     }
+
+
+
 }
