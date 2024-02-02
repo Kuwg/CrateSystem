@@ -8,3 +8,9 @@ mysql:
 
 prefix: "§b[§6CrateSystem§b]§r "
 no-permission: "§4You cannot do this!"
+
+crate-key:
+  name: "§eCrate Key"
+  lore: ["Left click a crate to open it!"]
+  material: DIAMOND
+  enchanted: true

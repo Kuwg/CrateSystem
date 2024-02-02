@@ -3,6 +3,9 @@ package me.kuwg.config;
 import me.kuwg.CrateSystem;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CrateConfiguration {
     private final CrateSystem main;
 
@@ -37,5 +40,14 @@ public class CrateConfiguration {
     }
     public String getPrefix(){
         return config.getString("prefix", "§b[§6CrateSystem§b]");
+    }
+    public String getKeyString(String path){
+        return config.getString("crate-key."+path, "");
+    }
+    public List<String> getKeyList(String path){
+        return config.getStringList("crate-key."+path);
+    }
+    public boolean getKeyBool(String path){
+        return config.getBoolean("crate-key."+path, false);
     }
 }

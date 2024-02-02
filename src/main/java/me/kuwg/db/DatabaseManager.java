@@ -10,6 +10,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("CallToPrintStackTrace")
@@ -80,14 +83,14 @@ public class DatabaseManager {
         }
     }
 
-    public void saveCrate(String crateName, Crate crate) {
+    public void saveCrate(Crate crate) {
         try {
             String query = "INSERT INTO " + CRATE_TABLE + " (crate_name, item_name, item_amount, item_enchantments, item_lore, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
 
             for (final ItemStack reward : crate.getPossibleRewards()) {
                 ItemMeta meta = reward.getItemMeta();
-                statement.setString(1, crateName);
+                statement.setString(1, crate.getName());
                 statement.setString(2, reward.getType().name());
                 statement.setInt(3, reward.getAmount());
                 statement.setString(4, ItemDataSerializer.serializeEnchants(meta.getEnchants()));
@@ -110,7 +113,9 @@ public class DatabaseManager {
             statement.setString(1, crateName);
             ResultSet resultSet = statement.executeQuery();
 
-            Crate crate = new Crate(Bukkit.getWorld(resultSet.getString("world")),
+            Crate crate = new Crate(
+                    crateName,
+                    Bukkit.getWorld(resultSet.getString("world")),
                     resultSet.getDouble("x"),
                     resultSet.getDouble("y"),
                     resultSet.getDouble("z"));
@@ -135,5 +140,24 @@ public class DatabaseManager {
             e.printStackTrace();
             return null;
         }
+    }
+    public List<Crate> loadAllCrates() {
+        List<Crate> crates = new ArrayList<>();
+        try {
+            String query = "SELECT DISTINCT(crate_name) FROM " + CRATE_TABLE;
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                String crateName = resultSet.getString("crate_name");
+                Crate crate = loadCrate(crateName);
+                if (crate != null) {
+                    crates.add(crate);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return crates;
     }
 }

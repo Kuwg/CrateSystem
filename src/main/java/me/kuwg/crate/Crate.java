@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.Random;
 
 public class Crate {
+    private final String name;
     private final List<ItemStack> possibleRewards;
     private final Location location;
-    public Crate(List<ItemStack> reward, World world, double x, double y, double z){
+
+    public Crate(String name, List<ItemStack> reward, World world, double x, double y, double z){
+        this.name = name;
         this.possibleRewards = reward;
         this.location=new Location(world, x, y, z);
         final String block = location.getBlock().getType().toString().toLowerCase();
@@ -23,11 +26,11 @@ public class Crate {
                             " while a chest of any type (Chest, Ender Chest, Trapped Chest, Shulker Boxes) was expected."
             );
     }
-    public Crate(World world, double x, double y, double z){
-        this(new ArrayList<>(), world, x, y, z);
+    public Crate(String name, World world, double x, double y, double z){
+        this(name, new ArrayList<>(), world, x, y, z);
     }
-    public Crate(Location location){
-        this(location.getWorld(), location.getX(), location.getY(), location.getZ());
+    public Crate(String name, Location location){
+        this(name, location.getWorld(), location.getX(), location.getY(), location.getZ());
     }
     public ItemStack getNextReward(){
         return possibleRewards.get(new Random().nextInt(0, possibleRewards.size()-1));
@@ -53,5 +56,7 @@ public class Crate {
         return location;
     }
 
-
+    public String getName() {
+        return name;
+    }
 }

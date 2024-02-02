@@ -2,6 +2,7 @@ package me.kuwg.commands;
 
 import me.kuwg.CrateSystem;
 import me.kuwg.crate.Crate;
+import me.kuwg.crate.CrateManager;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -57,8 +58,8 @@ public class CrateSystemCommand implements CommandExecutor {
 
                 player.getLocation().getBlock().setType(block);
                 player.sendMessage("§aSuccessfully created a new crate! Right Click on it to set rewards!");
-                Crate crate = new Crate(player.getLocation());
-
+                Crate crate = new Crate(CrateManager.nextCrateName(), player.getLocation());
+                CrateManager.addCrate(crate);
                 break;
             default:
                 player.sendMessage(CrateSystem.getConfiguration().getPrefix() + "§6Invalid command. Use \"/CrateSystem help\" for help.");
