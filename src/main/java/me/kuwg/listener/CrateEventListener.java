@@ -79,12 +79,14 @@ public class CrateEventListener implements Listener {
             else if(isKey(player.getInventory().getItemInOffHand())){
                 CrateManager.openCrate(player, crateCouple.getY(),  false);
             }
+            event.setCancelled(true);
         }
         else if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
             if(!player.hasPermission("cratesystem.edit")){
                 player.sendMessage(CrateSystem.getConfiguration().getPrefix() + CrateSystem.getConfiguration().noPermission());
                 return;
             }
+            event.setCancelled(true);
             CrateManager.openCrateEditor(player, crateCouple.getY());
         }
     }
@@ -106,26 +108,40 @@ public class CrateEventListener implements Listener {
     */
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event){
-        if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-inventory-name")))
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-inventory-name"))) {
             event.setCancelled(true);
-        else if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-edit-inventory-name")))
-            if(event.getCurrentItem().getItemMeta().getDisplayName().equals("aClick to confirm!")){
-                event.setCancelled(true);
-                final Player player = (Player) event.getWhoClicked();
-                Crate edit = CrateManager.getEditingCrate(player);
-                if(edit==null)return;
-                CrateManager.saveCrateEditor(player, edit, event.getClickedInventory());
+        } else if (event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-edit-inventory-name"))) {
+            if (event.getClickedInventory() != event.getView().getTopInventory()) {
+                event.setCancelled(false);
+                return;
             }
+            Player player = (Player) event.getWhoClicked();
 
+            if (event.getClickedInventory() != null && CrateManager.isEditing(player)) {
+                ItemStack clickedItem = event.getCurrentItem();
+                if (clickedItem != null &&
+                        clickedItem.getItemMeta().getDisplayName().equals(
+                                "§aClick to confirm!"
+                        )) {
+                    event.getClickedInventory().setItem(26, null);
+                    Crate crate = CrateManager.getEditingCrate(player);
+                    assert crate != null:"how";
+                    CrateManager.saveCrateEditor(player, crate, event.getClickedInventory());
+                    player.closeInventory();
+                    event.setCancelled(true);
+                }
+            }
+        }
     }
+
 
 
     private static boolean isKey(final ItemStack itemStack){
         return itemStack.getItemMeta()!=null &&
                 itemStack.getItemMeta().getDisplayName().equals(KEY.getItemMeta().getDisplayName())&&
                 itemStack.getType().equals(KEY.getType())&&
-                Objects.equals(itemStack.getLore(), KEY.getLore()) &&
+                Objects.equals(itemStack.getItemMeta().getLore(), KEY.getItemMeta().getLore()) &&
                 itemStack.getEnchantments()==KEY.getEnchantments();
     }
 }

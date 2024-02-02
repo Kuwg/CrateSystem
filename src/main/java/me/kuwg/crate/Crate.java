@@ -6,6 +6,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -15,6 +16,9 @@ public class Crate {
     private final Location location;
 
     public Crate(String name, List<ItemStack> reward, World world, double x, double y, double z){
+        x=(int)x;
+        y=(int)y;
+        z=(int)z;
         this.name = name;
         this.possibleRewards = reward;
         this.location=new Location(world, x, y, z);
@@ -34,7 +38,7 @@ public class Crate {
         this(name, location.getWorld(), location.getX(), location.getY(), location.getZ());
     }
     public ItemStack getNextReward(){
-        return possibleRewards.get(new Random().nextInt(0, possibleRewards.size()-1));
+        return possibleRewards.get(new Random().nextInt(0, possibleRewards.size()));
         /*
         Create a new random,
         get next int in bound 0 to max list size,
@@ -61,9 +65,7 @@ public class Crate {
         return name;
     }
     public void setRewards(Inventory inventory){
-        for (ItemStack item : inventory.getContents()){
-            possibleRewards.clear();
-            possibleRewards.add(item);
-        }
+        possibleRewards.clear();
+        Collections.addAll(possibleRewards, inventory.getContents());
     }
 }

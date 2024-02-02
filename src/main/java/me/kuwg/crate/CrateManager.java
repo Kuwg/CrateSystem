@@ -68,11 +68,11 @@ public class CrateManager {
             return;
         }
         if(mainHand)
-            player.getInventory().setItemInMainHand(null);
-        else player.getInventory().setItemInOffHand(null);
+            player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);
+        else player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);
         Inventory inventory = Bukkit.createInventory(player, 27,
                 CrateSystem.getConfiguration().getString("crate-inventory-name"));
-        final ItemStack none = new ItemStack(Material.GRAY_STAINED_GLASS);
+        final ItemStack none = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta noneMeta = none.getItemMeta();
         noneMeta.setDisplayName("");
         none.setItemMeta(noneMeta);
@@ -83,24 +83,32 @@ public class CrateManager {
                 inventory.setItem(i, none);
             }
         }
-        for (int i = 20; i <= 27; i++) {
+        for (int i = 17; i < 27; i++) {
             inventory.setItem(i, none);
         }
         inventory.setItem(9, none);
         inventory.setItem(19, none);
 
-
+        rewards.removeIf(Objects::isNull);
         int maxTicks = new Random().nextInt(40, 120);
         new BukkitRunnable() {
             int tick = 0;
-
             @Override
             public void run() {
                 tick++;
-                int index = (tick / 5) % rewards.size();
-                for (int i = 9; i <= 17; i++) {
-                    inventory.setItem(i, rewards.get(index));
+                int rewardsSize = rewards.size();
+
+                if (rewardsSize > 0) {
+                    int index = (tick / 5) % rewardsSize;
+                    ItemStack rewardItem = rewards.get(index);
+                    while (rewardItem == null) {
+                        index = (index + 1) % rewardsSize;
+                        rewardItem = rewards.get(index);
+                    }
+
+                    inventory.setItem(13, rewardItem);
                 }
+
                 if (tick >= maxTicks) {
                     cancel();
                     ItemStack finalReward = crate.getNextReward();
@@ -108,6 +116,8 @@ public class CrateManager {
                         inventory.setItem(i, finalReward);
                     }
                     player.getInventory().addItem(finalReward);
+                    Bukkit.getScheduler().runTaskLaterAsynchronously(CrateSystem.getInstance(),
+                            ()->player.closeInventory(), 200);
                 }
                 player.openInventory(inventory);
             }
@@ -119,28 +129,20 @@ public class CrateManager {
     public static void openCrateEditor(Player player, Crate crate) {
         Inventory inventory = Bukkit.createInventory(player, 27,
                 CrateSystem.getConfiguration().getString("crate-edit-inventory-name"));
-        if(crate.getPossibleRewards().size()>=26){
-            System.err.println("Invalid crate: "+crate.getName()+" size="+crate.getPossibleRewards().size()+">25!");
-            return;
-        }
         ItemStack confirm = new ItemStack(Material.GREEN_CONCRETE);
         ItemMeta confirmMeta = confirm.getItemMeta();
         confirmMeta.setDisplayName("§aClick to confirm!");
         confirm.setItemMeta(confirmMeta);
-        inventory.setItem(26, confirm);
-        crate.getPossibleRewards().forEach(inventory::addItem);
-        player.openInventory(inventory);
+        confirm.setAmount(1);
+        if(inventory.getItem(26)==null || inventory.getItem(26).getType()!=Material.GREEN_CONCRETE)
+            inventory.setItem(26, confirm);
+        for (ItemStack itemStack : crate.getPossibleRewards()) {
+            if(itemStack!=null)inventory.addItem(itemStack);
+        }
         editingCrates.put(player, crate);
-        new BukkitRunnable(){
-                @Override
-                public void run(){
-                    if(getEditingCrate(player)!=null)
-                        player.openInventory(inventory);
-                    else cancel();
-                }
-        }.runTaskTimer(CrateSystem.getInstance(), 0L, 1L);
+        player.openInventory(inventory);
+        player.sendMessage("§aEditing crate with id " + crate.getName() + ".");
     }
-
     public static void saveCrateEditor(Player player, Crate crate, Inventory inventory){
         crate.setRewards(inventory);
         player.closeInventory();
@@ -150,5 +152,8 @@ public class CrateManager {
 
     public static @Nullable Crate getEditingCrate(Player player){
         return editingCrates.getOrDefault(player, null);
+    }
+    public static boolean isEditing(Player player){
+        return editingCrates.containsKey(player);
     }
 }

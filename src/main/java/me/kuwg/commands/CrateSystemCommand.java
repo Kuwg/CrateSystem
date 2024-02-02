@@ -3,6 +3,7 @@ package me.kuwg.commands;
 import me.kuwg.CrateSystem;
 import me.kuwg.crate.Crate;
 import me.kuwg.crate.CrateManager;
+import me.kuwg.listener.CrateEventListener;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -63,6 +64,9 @@ public class CrateSystemCommand implements CommandExecutor {
             case "reload":
                 CrateSystem.getInstance().reload();
                 sender.sendMessage("§aSuccessfully reloaded the server.");
+                break;
+            case "give":
+                player.getInventory().addItem(CrateEventListener.KEY);
                 break;
             default:
                 player.sendMessage(CrateSystem.getConfiguration().getPrefix() + "§6Invalid command. Use \"/CrateSystem help\" for help.");

@@ -1,32 +1,47 @@
 package me.kuwg.util;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ItemDataSerializer {
-    public static String serializeEnchants(Map<Enchantment, Integer> enchantmentList){
-        String s =  enchantmentList.keySet().stream().map(
-                enchant -> enchant.getName() + "-" + enchantmentList.get(enchant) + ",").collect(Collectors.joining()
-        ); // append EnchantName-EnchantLevel, for every enchant.
-        return s.substring(0,s.length()-1);
+    public static String serializeEnchants(Map<Enchantment, Integer> enchantmentList) {
+        return enchantmentList.entrySet().stream()
+                .map(entry -> entry.getKey().getKey().getKey() + "-" + entry.getValue())
+                .collect(Collectors.joining(","));
     }
-    public static String serializeLore(List<String> lore){
-        return String.join(" ", lore.toArray(new String[0]));
+
+    public static String serializeLore(List<String> lore) {
+        return lore==null?"":String.join(" ", lore);
     }
-    public static Map<Enchantment, Integer> deserializeEnchants(String enchantList){
-        String[] enchants = enchantList.split(" ");
+
+    public static Map<Enchantment, Integer> deserializeEnchants(String enchantList) {
         Map<Enchantment, Integer> enchantmentList = new HashMap<>();
-        for(final String enchant : enchants){
-            String[] data = enchant.split("-");
-            String enchantName = data[0];
-            int enchantLevel = Integer.parseInt(data[1]);
-            enchantmentList.put(Enchantment.getByName(enchantName), enchantLevel);
+
+        if (enchantList != null && !enchantList.isEmpty()) {
+            String[] enchants = enchantList.split(",");
+            for (String enchant : enchants) {
+                String[] data = enchant.split("-");
+                if (data.length == 2) {
+                    String enchantName = data[0];
+                    int enchantLevel;
+                    try {
+                        enchantLevel = Integer.parseInt(data[1]);
+                        enchantmentList.put(Enchantment.getByKey(NamespacedKey.minecraft(enchantName)), enchantLevel);
+                        // need to fix deprecated methods...
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
+
         return enchantmentList;
     }
-    public static List<String> deserializeLore(String lore){
-        return Arrays.asList(lore.split(" "));
+
+    public static List<String> deserializeLore(String lore) {
+        return lore==null?new ArrayList<>():Arrays.asList(lore.split(" "));
     }
 }
