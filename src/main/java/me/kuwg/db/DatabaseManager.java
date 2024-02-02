@@ -3,6 +3,7 @@ package me.kuwg.db;
 import me.kuwg.config.CrateConfiguration;
 import me.kuwg.crate.Crate;
 import me.kuwg.util.ItemDataSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -82,7 +83,7 @@ public class DatabaseManager {
 
     public void saveCrate(String crateName, Crate crate) {
         try {
-            String query = "INSERT INTO " + CRATE_TABLE + " (item_name, item_amount, item_enchantments, item_lore, x, y, z) VALUES (?, ?, ?, ?, ?)";
+            String query = "INSERT INTO " + CRATE_TABLE + " (item_name, item_amount, item_enchantments, item_lore, world, x, y, z) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query);
             for (final ItemStack reward : crate.getPossibleRewards()) {
                 ItemMeta meta = reward.getItemMeta();
@@ -90,9 +91,10 @@ public class DatabaseManager {
                 statement.setInt(2, reward.getAmount());
                 statement.setString(3, ItemDataSerializer.serializeEnchants(meta.getEnchants()));
                 statement.setString(4, ItemDataSerializer.serializeLore(reward.getLore()));
-                statement.setDouble(5, crate.getLocationX());
-                statement.setDouble(6, crate.getLocationY());
-                statement.setDouble(7, crate.getLocationZ());
+                statement.setString(5, crate.getLocation().getWorld().getName());
+                statement.setDouble(5, crate.getLocation().getX());
+                statement.setDouble(6, crate.getLocation().getX());
+                statement.setDouble(7, crate.getLocation().getZ());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -102,10 +104,11 @@ public class DatabaseManager {
 
     public Crate loadCrate(String crateName) {
         try{
-            String query = "SELECT item_name, item_amount, item_enchantments, item_lore, x, y, z FROM " + CRATE_TABLE;
+            String query = "SELECT item_name, item_amount, item_enchantments, item_lore, world, x, y, z FROM " + CRATE_TABLE;
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
             Crate crate = new Crate(
+                    Bukkit.getWorld(resultSet.getString("world")),
                     resultSet.getDouble("x"),
                     resultSet.getDouble("y"),
                     resultSet.getDouble("z")

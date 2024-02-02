@@ -1,8 +1,11 @@
 package me.kuwg;
 
+import me.kuwg.commands.CrateSystemCommand;
 import me.kuwg.config.CrateConfiguration;
 import me.kuwg.db.DatabaseManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Objects;
 
 public final class CrateSystem extends JavaPlugin {
     private static CrateSystem instance;
@@ -13,6 +16,9 @@ public final class CrateSystem extends JavaPlugin {
         instance=this;
         configuration=new CrateConfiguration(instance);
         databaseManager=DatabaseManager.fromConfig(configuration);
+
+        // just to suppress the IntelliJ idea NullPointerException warning without SuppressWarnings.
+        Objects.requireNonNull(getCommand("cratesystem")).setExecutor(new CrateSystemCommand());
 
     }
 

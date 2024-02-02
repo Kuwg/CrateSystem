@@ -1,5 +1,7 @@
 package me.kuwg.crate;
 
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -8,18 +10,31 @@ import java.util.Random;
 
 public class Crate {
     private final List<ItemStack> possibleRewards;
-    private final double x, y, z;
-    public Crate(List<ItemStack> reward, double x, double y, double z){
+    private final Location location;
+    public Crate(List<ItemStack> reward, World world, double x, double y, double z){
         this.possibleRewards = reward;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.location=new Location(world, x, y, z);
+        final String block = location.getBlock().getType().toString().toLowerCase();
+        if(block.contains("chest")||block.contains("shulker_box"))
+            throw new IllegalArgumentException(
+                    "Invalid parameter, block at coordinates (x, y, z) " + x + " " + y + " " + z +
+                            " in world " + world.getName() +
+                            " is type " + location.getBlock().getType().toString().toLowerCase().replaceAll("_", " ") +
+                            " while a chest of any type (Chest, Ender Chest, Trapped Chest, Shulker Boxes) was expected."
+            );
     }
-    public Crate(double x, double y, double z){
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public Crate(World world, double x, double y, double z){
+        this.location=new Location(world, x, y, z);
         this.possibleRewards =new ArrayList<>();
+        final String block = location.getBlock().getType().toString().toLowerCase();
+        if(block.contains("chest")||block.contains("shulker_box"))
+            throw new IllegalArgumentException(
+                    "Invalid parameter, block at coordinates (x, y, z) " + x + " " + y + " " + z +
+                            " in world " + world.getName() +
+                            " is type " + location.getBlock().getType().toString().toLowerCase().replaceAll("_", " ") +
+                            " while a chest of any type (Chest, Ender Chest, Trapped Chest, Shulker Boxes) was expected."
+            );
+
     }
     public ItemStack getNextReward(){
         return possibleRewards.get(new Random().nextInt(0, possibleRewards.size()-1));
@@ -41,15 +56,9 @@ public class Crate {
         return possibleRewards;
     }
 
-    public double getLocationX() {
-        return x;
+    public Location getLocation() {
+        return location;
     }
 
-    public double getLocationY() {
-        return y;
-    }
 
-    public double getLocationZ() {
-        return z;
-    }
 }
