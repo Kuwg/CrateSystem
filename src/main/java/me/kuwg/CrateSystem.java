@@ -13,6 +13,7 @@ public final class CrateSystem extends JavaPlugin {
     private static CrateSystem instance;
     private static CrateConfiguration configuration;
     private DatabaseManager databaseManager;
+
     @Override
     public void onEnable() {
         instance=this;
@@ -43,5 +44,11 @@ public final class CrateSystem extends JavaPlugin {
 
     public DatabaseManager getDatabaseManager(){
         return databaseManager;
+    }
+
+    public void reload(){
+        configuration.saveConfig();
+        CrateEventListener.reload();
+
     }
 }

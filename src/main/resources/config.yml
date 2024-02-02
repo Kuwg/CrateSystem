@@ -9,7 +9,7 @@ mysql:
 prefix: "§b[§6CrateSystem§b]§r "
 no-permission: "§4You cannot do this!"
 crate-inventory-name: "§eOpening a Crate..."
-
+crate-edit-inventory-name: "Editing crate..."
 crate-key:
   name: "§eCrate Key"
   lore: ["Left click a crate to open it!"]

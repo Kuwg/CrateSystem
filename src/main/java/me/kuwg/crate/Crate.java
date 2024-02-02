@@ -2,6 +2,7 @@ package me.kuwg.crate;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -58,5 +59,11 @@ public class Crate {
 
     public String getName() {
         return name;
+    }
+    public void setRewards(Inventory inventory){
+        for (ItemStack item : inventory.getContents()){
+            possibleRewards.clear();
+            possibleRewards.add(item);
+        }
     }
 }

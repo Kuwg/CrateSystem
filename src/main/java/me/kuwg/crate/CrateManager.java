@@ -1,6 +1,7 @@
 package me.kuwg.crate;
 
 import me.kuwg.CrateSystem;
+import me.kuwg.config.CrateConfiguration;
 import me.kuwg.db.DatabaseManager;
 import me.kuwg.listener.CrateEventListener;
 import me.kuwg.util.Couple;
@@ -13,10 +14,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CrateManager {
@@ -116,8 +116,24 @@ public class CrateManager {
 
     }
 
-    public static void openCrateEditor(Player player, Crate crate){
-
+    private static final Map<Player, Crate> editingCrates = new HashMap<>();
+    public static void openCrateEditor(Player player, Crate crate) {
+        Inventory inventory = Bukkit.createInventory(player, 27,
+                Component.text(CrateSystem.getConfiguration().getString("crate-edit-inventory-name")));
+        for(ItemStack item : crate.getPossibleRewards()){
+            inventory.addItem(item);
+        }
+        player.openInventory(inventory);
+        editingCrates.put(player, crate);
     }
 
+    public static void saveCrateEditor(Player player, Crate crate, Inventory inventory){
+        crate.setRewards(inventory);
+        player.closeInventory();
+        player.sendMessage("§aSuccessfully saved the crate!");
+    }
+
+    public static @Nullable Crate getEditingCrate(Player player){
+        return editingCrates.getOrDefault(player, null);
+    }
 }

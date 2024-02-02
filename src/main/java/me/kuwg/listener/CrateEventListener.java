@@ -14,11 +14,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 
+@SuppressWarnings("deprecation") // for some reason 1.20.4 / paper have all default methods deprecated
 public class CrateEventListener implements Listener {
     public static ItemStack KEY;
     static {
@@ -85,8 +87,14 @@ public class CrateEventListener implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event){
+        final Player player = (Player) event.getPlayer();
         if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-inventory-name"))){
-            event.getPlayer().openInventory(event.getInventory());
+            player.openInventory(event.getInventory());
+        }
+        else if(event.getView().getTitle().equals(CrateSystem.getConfiguration().getString("crate-edit-inventory-name"))){
+            Crate crate = CrateManager.getEditingCrate(player);
+            if(crate==null)return;
+            CrateManager.saveCrateEditor(player, crate, event.getInventory());
         }
     }
 
